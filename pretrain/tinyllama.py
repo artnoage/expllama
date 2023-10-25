@@ -183,10 +183,6 @@ def train(fabric, state, train_dataloader, val_dataloader, monitor, resume):
     total_lengths = 0
     total_t0 = time.perf_counter()
 
-    if fabric.device.type == "xla":
-        import torch_xla.core.xla_model as xm
-
-        xm.mark_step()
     
     
     initial_iter = state["iter_num"]
