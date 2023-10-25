@@ -1,5 +1,6 @@
-<img src="https://github.com/artnoage/Experimental-Llama/blob/main/llama.png" width="500">
-
+<div align="center">
+<img src="https://github.com/artnoage/Experimental-Llama/blob/main/llama.png" width="400">
+</div>
 The purpose of this repo is to play around with different architectures. 
 
 
