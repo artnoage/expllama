@@ -19,6 +19,25 @@ KVCache = Tuple[torch.Tensor, torch.Tensor]
 FlashAttention2Available = RequirementCache("flash-attn>=2.0.0.post1")
 
 
+class Loralinear(nn.Module):
+    def __init__(self, input_dim:int, lora_dim:int, output_dim:int):
+        super().__init__()
+        # Define the matrices
+        self.matrix1 = nn.Parameter(torch.randn(input_dim, lora_dim))
+        self.matrix2 = nn.Parameter(torch.randn(lora_dim, output_dim))
+    def forward(self, x):
+        # Compute the product of the two matrices
+        x = torch.matmul(x, self.matrix1.to(x.device))
+        x = torch.matmul(x, self.matrix2.to(x.device))
+        return x
+    def reset_parameters(self):
+        """Reset all the weights, even including pretrained ones."""
+        if hasattr(self, "matrix1"):
+            # initialize A the same way as the default for nn.Linear and B to zero
+            # Wondering why 'a' is equal to math.sqrt(5)?: https://github.com/pytorch/pytorch/issues/15314
+            torch.nn.init.normal_(self.matrix1, mean=0.0, std=math.sqrt(2.0 / 5 / self.matrix1.size(1)))
+            torch.nn.init.normal_(self.matrix2, mean=0.0, std=math.sqrt(2.0 / 5 / self.matrix2.size(1)))
+
 class GPT(nn.Module):
     def __init__(self, config: Config) -> None:
         super().__init__()
@@ -36,7 +55,8 @@ class GPT(nn.Module):
         self.rope_cache: Optional[RoPECache] = None
         self.mask_cache: Optional[torch.Tensor] = None
         self.kv_caches: List[KVCache] = []
-
+        self.transformer['wte'].weight=self.lm_head.weight
+        
     def _init_weights(self, module: nn.Module, n_layer) -> None:
         """Meant to be used with `gpt.apply(gpt._init_weights)`."""
         # GPT-NeoX  https://arxiv.org/pdf/2204.06745.pdf

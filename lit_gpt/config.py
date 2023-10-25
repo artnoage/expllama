@@ -66,7 +66,9 @@ class Config:
             if self._mlp_class == "LLaMAMLP":
                 raise ValueError("The config needs to set the `intermediate_size`")
             self.intermediate_size = 4 * self.n_embd
-
+            self.intermediate_size = int(2 * self.intermediate_size / 3)
+            self.intermediate_size = self.padding_multiple* ((self.intermediate_size + self.padding_multiple - 1) // self.padding_multiple)
+            
     @property
     def head_size(self) -> int:
         return self.n_embd // self.n_head
@@ -279,7 +281,7 @@ tiny_LLaMA = [
         norm_eps=1e-5,
         _mlp_class="LLaMAMLP",
         intermediate_size=2048,
-        n_query_groups=1,
+        n_query_groups=12,
     ),
     dict(
         org="StatNLP-research",

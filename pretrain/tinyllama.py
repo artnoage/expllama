@@ -23,40 +23,39 @@ from pytorch_lightning.loggers import WandbLogger
 from lit_gpt import FusedCrossEntropyLoss
 import random
 
-model_name = "tiny_LLaMA_1b"
-name = "tinyllama_1b"
+model_name = "tiny_LLaMA_120M"
+name = model_name
 out_dir = Path("out") / name
 
+
 # Hyperparameters
-num_of_devices = 8
-global_batch_size = 512
+num_of_devices = 7
+gradient_accumulation_steps=2
 learning_rate = 4e-4
-micro_batch_size = 8
-max_step = 715256 * 2
+micro_batch_size = 15
+max_step = 1000000
 warmup_steps = 2000
 log_step_interval = 10
 eval_iters = 100
-save_step_interval = 5000
-eval_step_interval = 5000
-
+save_step_interval = 2000
+eval_step_interval = 2000
+config = Config.from_name(model_name)
 
 weight_decay = 1e-1
 beta1 = 0.9
 beta2 = 0.95
 grad_clip = 1.0
 decay_lr = True
-min_lr = 4e-5
+min_lr = 8e-6
 
-batch_size = global_batch_size // num_of_devices
-gradient_accumulation_steps = batch_size // micro_batch_size
-assert gradient_accumulation_steps > 0
+
+
+global_batch_size=num_of_devices*gradient_accumulation_steps*micro_batch_size
+print("Tokens per step",global_batch_size*config.block_size,"total tokens:",global_batch_size*2048*max_step)
+
 warmup_iters = warmup_steps * gradient_accumulation_steps
-
-
-
-
 max_iters = max_step * gradient_accumulation_steps
-lr_decay_iters = max_iters
+lr_decay_iters = 500000 * gradient_accumulation_steps
 log_iter_interval = log_step_interval * gradient_accumulation_steps
 
 
@@ -72,13 +71,13 @@ val_data_config = [
 
 hparams = {k: v for k, v in locals().items() if isinstance(v, (int, float, str)) and not k.startswith("_")}
 logger = step_csv_logger("out", name, flush_logs_every_n_steps=log_iter_interval)
-wandb_logger = WandbLogger()
+wandb_logger = WandbLogger(project="Llama",name=model_name)
 
 
 def setup(
     devices: int = 8,
-    train_data_dir: Path = Path("data/redpajama_sample"),
-    val_data_dir: Optional[Path] = None,
+    train_data_dir: Path = Path("/scratch/laschos/data/slim_star_combined"),
+    val_data_dir: Optional[Path] =Path("/scratch/laschos/data/slim_star_combined"),
     precision: Optional[str] = None,
     tpu: bool = False,
     resume: Union[bool, Path] = False,
@@ -113,7 +112,6 @@ def main(fabric, train_data_dir, val_data_dir, resume):
     if fabric.global_rank == 0:
         out_dir.mkdir(parents=True, exist_ok=True)
 
-    config = Config.from_name(model_name)
 
     train_dataloader, val_dataloader = create_dataloaders(
         batch_size=micro_batch_size,
