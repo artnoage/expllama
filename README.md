@@ -10,4 +10,4 @@ I corrected the formula of how intermidiate_dim is calculated. Also the number o
 
 I also tighted the weights of head and embed layer.
 
-Remark about speed: Playing around with small models (up to 160M), I noticed that Karpathy's implementation is faster due to compilation of the model.
+Remark about speed: Playing around with small models (up to 160M), I noticed that Karpathy's implementation is faster due to compilation of the model. This conflicts with the latest vesion of flash-attention.
