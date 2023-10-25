@@ -1,3 +1,5 @@
+![Alt text](Image URL)
+
 
 The purpose of this repo is to play around with different architectures. 
 
