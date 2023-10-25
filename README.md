@@ -1,5 +1,4 @@
-![Alt text](https://github.com/artnoage/Experimental-Llama/blob/main/llama.png)
-
+<img src="https://github.com/artnoage/Experimental-Llama/blob/main/llama.png" width="300">
 
 The purpose of this repo is to play around with different architectures. 
 
