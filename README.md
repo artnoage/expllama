@@ -1,4 +1,4 @@
-![Alt text](Image URL)
+![Alt text](https://github.com/artnoage/Experimental-Llama/blob/main/llama.png)
 
 
 The purpose of this repo is to play around with different architectures. 
