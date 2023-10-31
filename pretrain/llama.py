@@ -29,15 +29,15 @@ out_dir = Path("out") / name
 
 
 # Hyperparameters
-num_of_devices = 7
-gradient_accumulation_steps=2
+num_of_devices = 5
+gradient_accumulation_steps=3
 learning_rate = 4e-4
-micro_batch_size = 15
-max_step = 1000000
+micro_batch_size = 14
+max_step = 500000
 warmup_steps = 2000
 log_step_interval = 10
-eval_iters = 100
-save_step_interval = 2000
+eval_iters = 500
+save_step_interval = 20000
 eval_step_interval = 2000
 config = Config.from_name(model_name)
 
@@ -51,11 +51,11 @@ min_lr = 8e-6
 
 
 global_batch_size=num_of_devices*gradient_accumulation_steps*micro_batch_size
-print("Tokens per step",global_batch_size*config.block_size,"total tokens:",global_batch_size*2048*max_step)
+print("Tokens per step",global_batch_size*config.block_size/10**6, "M" ,"total tokens:",global_batch_size*2048*max_step/10**9,"B")
 
 warmup_iters = warmup_steps * gradient_accumulation_steps
 max_iters = max_step * gradient_accumulation_steps
-lr_decay_iters = 500000 * gradient_accumulation_steps
+lr_decay_iters = 300000 * gradient_accumulation_steps
 log_iter_interval = log_step_interval * gradient_accumulation_steps
 
 
@@ -71,16 +71,16 @@ val_data_config = [
 
 hparams = {k: v for k, v in locals().items() if isinstance(v, (int, float, str)) and not k.startswith("_")}
 logger = step_csv_logger("out", name, flush_logs_every_n_steps=log_iter_interval)
-wandb_logger = WandbLogger(project="Llama",name=model_name)
+wandb_logger = WandbLogger(project="Llama",name=model_name, resume="9rc2f7k6")
 
 
 def setup(
-    devices: int = 8,
+    devices: int = 5,
     train_data_dir: Path = Path("/scratch/laschos/data/slim_star_combined"),
     val_data_dir: Optional[Path] =Path("/scratch/laschos/data/slim_star_combined"),
     precision: Optional[str] = None,
     tpu: bool = False,
-    resume: Union[bool, Path] = False,
+    resume: Union[bool, Path] = True,
 ) -> None:
     precision = precision or get_default_supported_precision(training=True, tpu=tpu)
 
